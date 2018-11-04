@@ -1,9 +1,10 @@
 import * as Express from 'express';
-import * as http from 'http';
+import * as https from 'https';
 import * as path from 'path';
 import * as morgan from 'morgan';
 import { MsTeamsApiRouter, MsTeamsPageRouter } from 'express-msteams-host';
 import * as debug from "debug";
+import * as fs from 'fs';
 
 // Initialize debug logging module
 const log = debug("msteams");
@@ -64,8 +65,11 @@ express.use('/', Express.static(path.join(__dirname, 'web/'), {
 // Set the port
 express.set('port', port);
 
+//create the certificate
+var privateKey = fs.readFileSync(path.join(__dirname,'cert','privatekey.pem')).toString();
+var certificate = fs.readFileSync(path.join(__dirname,'cert','certificate.pem')).toString();
 // Start the webserver
-http.createServer(express).listen(port, (err: any) => {
+https.createServer({ key: privateKey, cert: certificate }, express).listen(port, (err: any) => {
     if (err) {
         return console.error(err);
     }

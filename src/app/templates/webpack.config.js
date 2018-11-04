@@ -7,6 +7,7 @@ var webpack = require('webpack');
 var path = require('path');
 var fs = require('fs');
 var argv = require('yargs').argv;
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 var debug = argv.debug !== undefined;
 
@@ -20,82 +21,84 @@ fs.readdirSync('node_modules')
     });
 
 var config = [{
-        entry: {
-            server: [
-                __dirname + '/src/app/server.ts'
-            ],
-        },
-        mode: debug ? 'development' : 'production',
-        output: {
-            path: __dirname + '/dist',
-            filename: '[name].js',
-            devtoolModuleFilenameTemplate: debug ? '[absolute-resource-path]' : '[]'
-        },
-        externals: nodeModules,
-        devtool: 'source-map',
-        resolve: {
-            extensions: [".ts", ".tsx", ".js"],
-            alias: {}
-        },
-        target: 'node',
-        node: {
-            __dirname: false,
-            __filename: false,
-        },
-        module: {
-            rules: [{
-                test: /\.tsx?$/,
-                exclude: [/lib/, /dist/],
-                loader: "ts-loader"
-            }]
-        },
-        plugins: []
+    entry: {
+        server: [
+            __dirname + '/src/app/server.ts'
+        ],
     },
-    {
-        entry: {
-            client: [
-                __dirname + '/src/app/scripts/client.ts'
-            ]
+    mode: debug ? 'development' : 'production',
+    output: {
+        path: __dirname + '/dist',
+        filename: '[name].js',
+        devtoolModuleFilenameTemplate: debug ? '[absolute-resource-path]' : '[]'
+    },
+    externals: nodeModules,
+    devtool: 'source-map',
+    resolve: {
+        extensions: [".ts", ".tsx", ".js"],
+        alias: {}
+    },
+    target: 'node',
+    node: {
+        __dirname: false,
+        __filename: false,
+    },
+    module: {
+        rules: [{
+            test: /\.tsx?$/,
+            exclude: [/lib/, /dist/],
+            loader: "ts-loader"
+        }]
+    },
+    plugins: [new CopyWebpackPlugin([
+        { from: 'cert', to: 'cert' }
+    ])]
+},
+{
+    entry: {
+        client: [
+            __dirname + '/src/app/scripts/client.ts'
+        ]
+    },
+    mode: debug ? 'development' : 'production',
+    output: {
+        path: __dirname + '/dist/web/scripts',
+        filename: '[name].js',
+        libraryTarget: 'umd',
+        library: '<%=libraryName%>',
+        publicPath: '/scripts/'
+    },
+    externals: {},
+    devtool: 'source-map',
+    resolve: {
+        extensions: [".ts", ".tsx", ".js"],
+        alias: {}
+    },
+    target: 'web',
+    module: {
+        rules: [{
+            test: /\.tsx?$/,
+            exclude: [/lib/, /dist/],
+            loader: "ts-loader",
+            options: {
+                configFile: "tsconfig-client.json"
+            }
         },
-        mode: debug ? 'development' : 'production',
-        output: {
-            path: __dirname + '/dist/web/scripts',
-            filename: '[name].js',
-            libraryTarget: 'umd',
-            library: '<%=libraryName%>',
-            publicPath: '/scripts/'
-        },
-        externals: {},
-        devtool: 'source-map',
-        resolve: {
-            extensions: [".ts", ".tsx", ".js"],
-            alias: {}
-        },
-        target: 'web',
-        module: {
-            rules: [{
-                    test: /\.tsx?$/,
-                    exclude: [/lib/, /dist/],
-                    loader: "ts-loader",
-                    options: {
-                        configFile: "tsconfig-client.json"
-                    }
-                },
-                {
-                    test: /\.(eot|svg|ttf|woff|woff2)$/,
-                    loader: 'file-loader?name=public/fonts/[name].[ext]'
-                }
-            ]
-        },
-        plugins: [],
-        performance: {
-            maxEntrypointSize: 400000,
-            maxAssetSize: 400000,
-            assetFilter: function(assetFilename) {
-                return assetFilename.endsWith('.js');
-              }
+        {
+            test: /\.(eot|svg|ttf|woff|woff2)$/,
+            loader: 'file-loader?name=public/fonts/[name].[ext]'
+        }
+        ]
+    },
+    plugins: [],
+    performance: {
+        maxEntrypointSize: 400000,
+        maxAssetSize: 400000,
+        assetFilter: function (assetFilename) {
+            return assetFilename.endsWith('.js');
         }
     }
+}
 ];
 
 module.exports = config;
