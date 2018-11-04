@@ -45,7 +45,7 @@ export class GeneratorTeamsApp extends Generator {
     }
 
     public initializing() {
-        this.log(yosay('Welcome to the ' + chalk.default.yellow(`Microsoft Teams App generator (${pkg.version})`)));
+        this.log(yosay('Welcome to the ' + chalk.default.yellow(`Microsoft Teams App generator :) (${pkg.version})`)));
         this.composeWith('teams:tab', { 'options': this.options });
         this.composeWith('teams:bot', { 'options': this.options });
         this.composeWith('teams:custombot', { 'options': this.options });
